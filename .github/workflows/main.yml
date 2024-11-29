@@ -43,7 +43,7 @@ jobs:
             linux/arm64
           tags: |
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          outputs: type=docker,dest=biomi-rpi.tar
+          outputs: type=oci,dest=biomi-rpi.tar
 
       - name: Upload Docker image artifact
         uses: actions/upload-artifact@v3
