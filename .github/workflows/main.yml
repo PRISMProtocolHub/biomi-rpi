@@ -3,10 +3,10 @@ name: BIOMI-RPI
 on:
   push:
     branches:
+      #- 'main'
       - '**'
-
 env:
-  IMAGE_NAME: ghcr.io/PRISMProtocolHub/biomi-rpi
+  IMAGE_NAME: ghcr.io/prismprotocolhub/biomi-rpi
 
 permissions:
   contents: read
@@ -24,23 +24,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Cache Docker image
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: /tmp/image.tar
-          key: ${{ hashFiles('Dockerfile') }}
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          push: false
+          platforms: |
+            linux/amd64
+            linux/arm64
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Save Docker image
         run: |
-          docker buildx build \
-            --platform linux/arm64 \
-            -t ${{ env.IMAGE_NAME }}:latest \
-            -o type=docker,dest=- \
-            . > /tmp/image.tar
+          docker save -o biomi-rpi.tar biomi-rpi:${{ github.sha }}
+          tar -czf biomi-rpi.tar.gz biomi-rpi.tar
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: biomi-rpi
+          path: biomi-rpi.tar
+
+      - name: Clean up Docker system
+        run: docker system prune --all --force
 
   test:
     needs: build
@@ -101,14 +117,13 @@ jobs:
           git fetch --tags
           echo "TAG=$(git tag --contains HEAD)" >> $GITHUB_ENV
 
-      - name: Cache Docker image
-        uses: actions/cache@v4
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v3
         with:
-          path: /tmp/image.tar
-          key: ${{ hashFiles('Dockerfile') }}
+          name: biomi-rpi
 
       - name: Load Docker image
-        run: docker load -i /tmp/image.tar
+        run: docker load -i biomi-rpi.tar
 
       - name: Tag Docker image
         run: docker tag ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:${{ env.TAG }}
