@@ -12,6 +12,7 @@ ARG APP_DIR=/app
 ARG IMAGE_FILE_NAME=raspios.qcow2
 ARG IMAGE_FILE_NAME_COMPRESSED=$IMAGE_FILE_NAME.gz
 ARG KERNEL_FILE_NAME=kernel.img
+ARG IMAGE_SIZE=16G
 
 # Distro source
 ARG DISTRO_DATE=2022-09-22
@@ -81,6 +82,8 @@ RUN wget https://github.com/PRISMProtocolHub/biomi-rpi-kernel-builder/releases/d
 # Get the raspios image
 RUN wget https://github.com/PRISMProtocolHub/biomi-rpi-image-builder/releases/download/$DISTRO_TAG/raspios.qcow2.gz
 RUN gunzip raspios.qcow2.gz
+
+RUN yes Y | /app/run.py resize $IMAGE_SIZE
 
 EXPOSE 2222
 
