@@ -39,6 +39,7 @@ jobs:
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+            ${{ env.IMAGE_NAME }}:latest
 
 # UNCOMMENT AND TEST WHILE TESTS WILL BE ABLE TO BE RAN
 #      - name: Build Docker Image
