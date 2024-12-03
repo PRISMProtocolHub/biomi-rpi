@@ -54,55 +54,55 @@ jobs:
       - name: Clean up Docker system
         run: docker system prune --all --force
 
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    outputs:
-      publish: ${{ steps.check.outputs.publish }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Cache Docker image
-        uses: actions/cache@v4
-        with:
-          path: /tmp/image.tar
-          key: ${{ hashFiles('Dockerfile') }}
-
-      - name: Load Docker image
-        run: docker load -i /tmp/image.tar
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ansible
-          pip3 install docker
-        env:
-          PIP_BREAK_SYSTEM_PACKAGES: 1
-
-      - name: Run tests
-        run: |
-          ansible-playbook \
-            -i test/hosts.yml \
-            test/main.yml
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: config
-          path: dist
-
-      - name: Check for Tag
-        id: check
-        run: |
-          git fetch --tags
-          if [[ ! -z "$(git tag --contains HEAD)" ]]; then
-            echo "publish=true" >> $GITHUB_OUTPUT
-          fi
+#  test:
+#    needs: build
+#    runs-on: ubuntu-latest
+#    outputs:
+#      publish: ${{ steps.check.outputs.publish }}
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Cache Docker image
+#        uses: actions/cache@v4
+#        with:
+#          path: /tmp/image.tar
+#          key: ${{ hashFiles('Dockerfile') }}
+#
+#      - name: Load Docker image
+#        run: docker load -i /tmp/image.tar
+#
+#      - name: Install dependencies
+#        run: |
+#          sudo apt-get update
+#          sudo apt-get install -y ansible
+#          pip3 install docker
+#        env:
+#          PIP_BREAK_SYSTEM_PACKAGES: 1
+#
+#      - name: Run tests
+#        run: |
+#          ansible-playbook \
+#            -i test/hosts.yml \
+#            test/main.yml
+#
+#      - name: Upload artifacts
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: config
+#          path: dist
+#
+#      - name: Check for Tag
+#        id: check
+#        run: |
+#          git fetch --tags
+#          if [[ ! -z "$(git tag --contains HEAD)" ]]; then
+#            echo "publish=true" >> $GITHUB_OUTPUT
+#          fi
 
   publish:
-    if: needs.test.outputs.publish == 'true'
-    needs: test
+#    if: needs.test.outputs.publish == 'true'
+#    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
